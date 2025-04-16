@@ -1,4 +1,4 @@
-package compose.project.demo
+package compose.project.demo.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -22,52 +22,40 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import compose.project.demo.data.model.Employee
 
 @Composable
 fun ShuffleScreen(viewModel: ShuffleViewModel) {
-    val officeA by viewModel.officeA.collectAsState()
-    val officeB by viewModel.officeB.collectAsState()
-
-    var isShuffling by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isShuffling) {
-        while (isShuffling) {
-            viewModel.shuffleEmployees()
-            delay(800)
-        }
-    }
+    val state by viewModel.uiState.collectAsState()
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Row(modifier = Modifier.fillMaxHeight(0.85f)) {
-            EmployeeList("I-11", officeA, Modifier.weight(1f))
+            EmployeeList("I-11", state.officeA, Modifier.weight(1f))
             Spacer(Modifier.width(8.dp))
-            EmployeeList("UBL Tower", officeB, Modifier.weight(1f))
+            EmployeeList("UBL Tower", state.officeB, Modifier.weight(1f))
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = { isShuffling = true },
-                enabled = !isShuffling
+                onClick = { viewModel.onIntent(ShuffleIntent.StartShuffle) },
+                enabled = !state.isShuffling
             ) {
                 Text("Start")
             }
             Button(
-                onClick = { isShuffling = false },
-                enabled = isShuffling
+                onClick = { viewModel.onIntent(ShuffleIntent.StopShuffle) },
+                enabled = state.isShuffling
             ) {
                 Text("Stop")
             }
@@ -75,9 +63,46 @@ fun ShuffleScreen(viewModel: ShuffleViewModel) {
     }
 }
 
+//    val officeA by viewModel.officeA.collectAsState()
+//    val officeB by viewModel.officeB.collectAsState()
+//
+//    var isShuffling by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(isShuffling) {
+//        while (isShuffling) {
+//            viewModel.shuffleEmployees()
+//            delay(800)
+//        }
+//    }
+//
+//    Column(
+//        modifier = Modifier.fillMaxSize().padding(16.dp),
+//        verticalArrangement = Arrangement.SpaceBetween,
+//    ) {
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            Button(
+//                onClick = { isShuffling = true },
+//                enabled = !isShuffling
+//            ) {
+//                Text("Start")
+//            }
+//            Button(
+//                onClick = { isShuffling = false },
+//                enabled = isShuffling
+//            ) {
+//                Text("Stop")
+//            }
+//        }
+//    }
+//}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun EmployeeList(title: String, employees: List<String>, modifier: Modifier) {
+fun EmployeeList(title: String, employees: List<Employee>, modifier: Modifier) {
     Column(modifier) {
         Text(title, style = MaterialTheme.typography.h6)
         Spacer(modifier = Modifier.height(8.dp))
@@ -89,8 +114,9 @@ fun EmployeeList(title: String, employees: List<String>, modifier: Modifier) {
             label = "Shuffling Animation"
         ) { animatedList ->
             LazyColumn {
-                items(animatedList) { name ->
-                    Text(". $name")
+                items(animatedList) { employee ->
+                    Text(
+                        text = "• ${employee.name}")
                 }
             }
         }

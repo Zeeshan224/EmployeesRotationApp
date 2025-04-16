@@ -105,6 +105,8 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+
 }
 
 compose.desktop {
